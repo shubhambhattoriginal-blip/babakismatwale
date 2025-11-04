@@ -17,13 +17,14 @@ logger = logging.getLogger(__name__)
 
 # IMPORTANT: Replace "YOUR_BOT_TOKEN" with your actual Telegram Bot Token
 # Note: The provided token is not a real token, please replace it for actual use.
-BOT_TOKEN = "8359469817:AAEozZ66Lwyv6seevRw4iMpxvMv13n12rXw"
+BOT_TOKEN = "8359469817:AAFBtmWhXouq9dfSrSe04zxnnL5jmbKSUzk:
+-FWYM"
 
 # --- Interface Content Functions ---
 
 def get_user_info_text(user_id):
     """
-    Generates the main text message with requested formatting and data.
+    Generates the main text message with user information and pricing details.
     """
     
     user_tg_id = user_id
@@ -32,14 +33,14 @@ def get_user_info_text(user_id):
     return (
         "⚠️ **FREE USER ACCOUNT**\n\n"
         "**User Info**\n"
-        f"• ID: `{user_tg_id}`\n"  # Shows as a monospace code block
+        f"• ID: `{user_tg_id}`\n"  # Monospace code block
         f"• Balance: **₹{balance}**\n"
         "• Plan: **Not Subscribed**\n"
         "• Status: Upgrade for discounts\n\n"
         "🎁 **Benefits**\n"
         "• 20% Bonus on recharge\n\n"
         "💰 **Current Prices**\n"
-        # Bolding all price values as requested
+        # Price values are bolded
         "• Bank: **₹1.60** • Code: **₹2.60**\n"
         "• IFSC: **₹3.00** • State: **₹4.00**\n\n"
         "💎 **Upgrade to Premium for better prices!**"
@@ -74,7 +75,7 @@ def get_keyboard():
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handles the /start command and displays the main user interface."""
     
-    # If the user is currently in the redeem code flow, cancel it (optional, but good for UX)
+    # Reset the redeem code state when the main menu is shown
     context.user_data['awaiting_code'] = False
     
     # Determine the message source (from message or callback query)
@@ -83,7 +84,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     elif update.callback_query and update.callback_query.message:
         message = update.callback_query.message
     else:
-        # Fallback if neither message nor query is available (rare)
         return
 
     user_id = message.from_user.id
@@ -94,32 +94,42 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await message.reply_text(
         text, 
         reply_markup=reply_markup,
-        parse_mode='Markdown' # Essential for bolding and the ID code block
+        parse_mode='Markdown'
     )
 
 # --- Conversation Flow Handlers ---
 
 async def initiate_redeem_flow(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
-    Handles any button click, sets the state to awaiting_code, and prompts the user in English 
-    using a special Unicode font.
+    Handles any button click OR the /ifsc command, starting the Redeem Code prompt.
     """
-    query = update.callback_query
     
-    # 1. Answer the callback query to stop the loading icon
-    await query.answer() 
+    # Determine the message source
+    if update.callback_query:
+        # If it came from a button click, answer the query and edit the message
+        query = update.callback_query
+        await query.answer() 
+        
+        # Edit the message to inform the user
+        await query.edit_message_text(
+            "𝐘𝐨𝐮 𝐢𝐧𝐢𝐭𝐢𝐚𝐭𝐞𝐝 𝐚 𝐬𝐞𝐫𝐯𝐢𝐜𝐞 𝐫𝐞𝐪𝐮𝐢𝐫𝐢𝐧𝐠 𝐚 𝐫𝐞𝐝𝐞𝐞𝐦 𝐜𝐨𝐝𝐞.", 
+            parse_mode='Markdown'
+        )
+        chat_id = query.message.chat_id
+    elif update.message:
+        # If it came from the /ifsc command
+        await update.message.reply_text(
+            "𝐘𝐨𝐮 𝐢𝐧𝐢𝐭𝐢𝐚𝐭𝐞𝐝 𝐭𝐡𝐞 **/ifsc** 𝐬𝐞𝐫𝐯𝐢𝐜𝐞 𝐫𝐞𝐪𝐮𝐢𝐫𝐢𝐧𝐠 𝐚 𝐫𝐞𝐝𝐞𝐞𝐦 𝐜𝐨𝐝𝐞.",
+            parse_mode='Markdown'
+        )
+        chat_id = update.message.chat_id
+    else:
+        return
     
     # 2. Set the state flag in user_data
     context.user_data['awaiting_code'] = True
     
-    # 3. Edit the original message to remove the menu and inform the user
-    #    Uses Unicode Bold Serif font for a special look.
-    await query.edit_message_text(
-        "𝐘𝐨𝐮 𝐢𝐧𝐢𝐭𝐢𝐚𝐭𝐞𝐝 𝐚 𝐬𝐞𝐫𝐯𝐢𝐜𝐞 𝐫𝐞𝐪𝐮𝐢𝐫𝐢𝐧𝐠 𝐚 𝐫𝐞𝐝𝐞𝐞𝐦 𝐜𝐨𝐝𝐞.", 
-        parse_mode='Markdown'
-    )
-    
-    # 4. Send the prompt for the redeem code (in a new message)
+    # 3. Send the prompt for the redeem code (in special Unicode font)
     prompt_text = (
         "🔑 **𝐑𝐄𝐃𝐄𝐄𝐌 𝐂𝐎𝐃𝐄 𝐑𝐄𝐐𝐔𝐈𝐑𝐄𝐃**\n\n"
         "𝐏𝐥𝐞𝐚𝐬𝐞 𝐬𝐞𝐧𝐝 𝐲𝐨𝐮𝐫 𝐫𝐞𝐝𝐞𝐞𝐦 𝐜𝐨𝐝𝐞 𝐧𝐨𝐰.\n\n"
@@ -128,7 +138,7 @@ async def initiate_redeem_flow(update: Update, context: ContextTypes.DEFAULT_TYP
     )
     
     await context.bot.send_message(
-        chat_id=query.message.chat_id,
+        chat_id=chat_id,
         text=prompt_text,
         parse_mode='Markdown'
     )
@@ -136,21 +146,20 @@ async def initiate_redeem_flow(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
-    Processes all plain text input. If the bot is awaiting a code, it validates it and responds.
+    Processes all plain text input, validates the redeem code, and responds.
     """
     
     # Check if the bot is currently awaiting a redeem code
     if not context.user_data.get('awaiting_code', False):
-        # If not awaiting a code, ignore the message
         return
 
     user_input = update.message.text.strip()
     
-    # Reset the state immediately 
+    # Reset the state immediately after receiving the input
     context.user_data['awaiting_code'] = False 
 
     # --- Redeem Code Logic ---
-    # NOTE: You MUST replace this with your actual database/API validation logic.
+    # NOTE: Replace this placeholder with your actual validation logic.
     VALID_CODE = "SUCCESSCODE123" 
     
     if user_input.upper() == VALID_CODE:
@@ -169,18 +178,21 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 
 def main() -> None:
-    """Starts the bot by setting up the application and handlers."""
+    """Sets up the application and handlers, then starts the bot."""
     
     # Build the Application
     application = Application.builder().token(BOT_TOKEN).build()
 
-    # 1. Register handler for the /start command
+    # 1. Handler for the /start command
     application.add_handler(CommandHandler("start", start_command))
     
-    # 2. Register handler for ALL button clicks (triggers the redeem flow)
+    # 2. NEW Handler for the /ifsc command (triggers the redeem flow)
+    application.add_handler(CommandHandler("ifsc", initiate_redeem_flow))
+
+    # 3. Handler for ALL button clicks (triggers the redeem flow)
     application.add_handler(CallbackQueryHandler(initiate_redeem_flow))
 
-    # 3. Register handler for ALL non-command text messages (used to receive the code)
+    # 4. Handler for ALL non-command text messages (used to receive the code)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_input))
 
     # Run the bot 
