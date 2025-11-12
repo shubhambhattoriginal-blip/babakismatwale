@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # IMPORTANT: Replace "YOUR_BOT_TOKEN" with your actual Telegram Bot Token
 # Note: The provided token is not a real token, please replace it for actual use.
-BOT_TOKEN = "8359469817:AAGqO4Fz8mXZYVt-FHqnvfo2QhXK0TvFm2s" 
+BOT_TOKEN = "8359469817:AAGRHSM3zODtL7GBnn9YzKSRLrFB9yc3t5c" 
 
 # --- Interface Content Functions ---
 # (get_user_info_text and get_keyboard remain unchanged)
@@ -204,3 +204,4 @@ if __name__ == "__main__":
     main()
 
     
+
