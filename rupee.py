@@ -111,8 +111,8 @@ WARNING_MESSAGE = (
     "We apologize for the inconvenience.\n\n"
     "**For Data Needs & Support:**\n"
     "• **Support:** **@Babakismatwalesupport**\n"
-    "• **Channel:** [Babakismatwale Channel](https://t.me/babakismatwalechannel)\n"
-    "• **Group:** [Babakismatwale Group](https://t.me/babakismatwalegroup)\n\n"
+    "• **Channel:** [Babakismatwale Channel](https://t.me/babakismatwalecomminity)\n"
+    "• **Group:** [Babakismatwale Group](https://t.me/babakismatwalediscussion)\n\n"
     "Thank you for your cooperation."
 )
 
@@ -204,4 +204,5 @@ if __name__ == "__main__":
     main()
 
     
+
 
